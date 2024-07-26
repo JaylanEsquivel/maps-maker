@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa de Casas à Venda</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+  <script>
+    let map;
+    let markers = [];
+    let infowindow;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: -23.5505, lng: -46.6333 },
+        zoom: 12
+      });
+
+      infowindow = new google.maps.InfoWindow();
+
+      // Adiciona marcadores de exemplo
+      addMarker({ lat: -23.5505, lng: -46.6333 }, 'Casa 1');
+      addMarker({ lat: -23.5605, lng: -46.6433 }, 'Casa 2');
+
+      document.getElementById('filterSchools').addEventListener('change', function() {
+        filterMarkers('school');
+      });
+
+      document.getElementById('filterHospitals').addEventListener('change', function() {
+        filterMarkers('hospital');
+      });
+
+      document.getElementById('filterBusStops').addEventListener('change', function() {
+        filterMarkers('bus_station');
+      });
+    }
+
+    function addMarker(location, title) {
+      let marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        title: title
+      });
+
+      marker.addListener('click', function() {
+        infowindow.setContent(title);
+        infowindow.open(map, marker);
+      });
+
+      markers.push(marker);
+    }
+
+    function filterMarkers(type) {
+      let service = new google.maps.places.PlacesService(map);
+
+      markers.forEach(marker => {
+        service.nearbySearch({
+          location: marker.getPosition(),
+          radius: 1000,
+          type: [type]
+        }, function(results, status) {
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            marker.setVisible(true);
+          } else {
+            marker.setVisible(false);
+          }
+        });
+      });
+    }
+  </script>
+</head>
+<body onload="initMap()">
+  <div id="map" style="height: 500px; width: 100%;"></div>
+  <label>
+    <input type="checkbox" id="filterSchools"> Próximo a Escolas
+  </label>
+  <label>
+    <input type="checkbox" id="filterHospitals"> Próximo a Hospitais
+  </label>
+  <label>
+    <input type="checkbox" id="filterBusStops"> Próximo a Linhas de Ônibus
+  </label>
+</body>
+</html>
